@@ -4,8 +4,8 @@ LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com)"
 ARG POSTGIS_VERSION
 ENV POSTGIS_VERSION ${POSTGIS_VERSION:-2.5.3}
 
-COPY 003_add_pg_extension.sql /docker-entrypoint-initdb.d
-COPY 004_create_db_users.sql /docker-entrypoint-initdb.d
+COPY 004_add_pg_extension.sql /docker-entrypoint-initdb.d
+COPY 005_create_db_users.sql /docker-entrypoint-initdb.d
 
 RUN set -ex \
     && apk add --no-cache --virtual .fetch-deps \
