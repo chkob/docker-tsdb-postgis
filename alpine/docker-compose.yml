@@ -7,6 +7,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - POSTGIS_VERSION=2.5.4
     restart: 'always'
     environment:
       POSTGRES_USER: 'postgres'
@@ -26,6 +28,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - POSTGIS_VERSION=2.5.4
     restart: 'always'
     environment:
       POSTGRES_USER: 'postgres'
