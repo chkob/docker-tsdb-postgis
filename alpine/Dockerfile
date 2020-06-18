@@ -1,6 +1,6 @@
 FROM timescale/timescaledb:1.7.1-pg12
 
-LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com)"
+LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com, chkob81@hotmail.com)"
 ARG POSTGIS_VERSION
 ENV POSTGIS_VERSION ${POSTGIS_VERSION:-2.5.3}
 
