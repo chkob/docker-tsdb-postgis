@@ -4,6 +4,7 @@ LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com, chkob81@hotmail.
 ARG POSTGIS_VERSION
 ENV POSTGIS_VERSION ${POSTGIS_VERSION:-2.5.3}
 
+COPY 003_setup_replication.sh /docker-entrypoint-initdb.d
 COPY 004_add_pg_extension.sql /docker-entrypoint-initdb.d
 COPY 005_create_db_users.sql /docker-entrypoint-initdb.d
 
@@ -62,3 +63,6 @@ RUN set -ex \
     && cd / \
     && rm -rf /tmp/postgis-${POSTGIS_VERSION} \
     && apk del .fetch-deps .build-deps .build-deps-edge
+
+ENV PG_MAX_WAL_SENDERS 8
+ENV PG_WAL_KEEP_SEGMENTS 8

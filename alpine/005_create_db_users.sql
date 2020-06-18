@@ -1,3 +1,4 @@
+SELECT 'Create user "maupdater" ';
 
 CREATE ROLE maupdater WITH
   LOGIN
@@ -7,6 +8,8 @@ CREATE ROLE maupdater WITH
   CREATEROLE
   NOREPLICATION;
   
+SELECT 'Create user "navtech" '; 
+
 CREATE ROLE navtech WITH
   LOGIN
   SUPERUSER
@@ -15,14 +18,18 @@ CREATE ROLE navtech WITH
   CREATEROLE
   REPLICATION;
   
+SELECT 'Create user "web_api" '; 
+
 CREATE ROLE web_api WITH
   LOGIN
   NOSUPERUSER
   INHERIT
   NOCREATEDB
   NOCREATEROLE
-  NOREPLICATION;  
+  NOREPLICATION;
   
+SELECT 'Create user "windows_service" '; 
+
 CREATE ROLE windows_service WITH
   LOGIN
   NOSUPERUSER
@@ -30,3 +37,13 @@ CREATE ROLE windows_service WITH
   NOCREATEDB
   NOCREATEROLE
   NOREPLICATION;
+  
+SELECT 'Create user "repuser" '; 
+
+CREATE ROLE repuser WITH
+  LOGIN
+  SUPERUSER
+  INHERIT
+  CREATEDB
+  CREATEROLE
+  REPLICATION;  
