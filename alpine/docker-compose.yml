@@ -37,7 +37,7 @@ services:
       PGDATA: '/var/lib/postgresql/data/pgdata'
       REPLICATE_FROM: 'pg-master'
     volumes:
-     - '/var/lib/postgresql/data'
+      - '/var/lib/postgresql/data'
     ports:
       - target: 5432
         published: 9877
