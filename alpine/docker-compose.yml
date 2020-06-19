@@ -9,13 +9,15 @@ services:
       dockerfile: Dockerfile
       args:
         - POSTGIS_VERSION=2.5.4
-    restart: 'always'
+    restart: 'on-failure'
     environment:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: 'docker'
       PGDATA: '/var/lib/postgresql/data/pgdata'
     volumes:
-     - '/var/lib/postgresql/data'
+      - type: bind
+        source: '../../../volumes/pg-master'
+        target: '/var/lib/postgresql/data'
     ports:
       - target: 5432
         published: 9876
@@ -30,14 +32,16 @@ services:
       dockerfile: Dockerfile
       args:
         - POSTGIS_VERSION=2.5.4
-    restart: 'always'
+    restart: 'on-failure'
     environment:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: 'docker'
       PGDATA: '/var/lib/postgresql/data/pgdata'
       REPLICATE_FROM: 'pg-master'
     volumes:
-      - '/var/lib/postgresql/data'
+      - type: bind
+        source: '../../../volumes/pg-slave'
+        target: '/var/lib/postgresql/data' 
     ports:
       - target: 5432
         published: 9877
