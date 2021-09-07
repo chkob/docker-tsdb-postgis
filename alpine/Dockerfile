@@ -1,68 +1,117 @@
-FROM timescale/timescaledb:1.7.1-pg12
+FROM timescale/timescaledb:2.4.1-pg13
 
 LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com, chkob81@hotmail.com)"
-ARG POSTGIS_VERSION
-ENV POSTGIS_VERSION ${POSTGIS_VERSION:-2.5.3}
 
-COPY 003_setup_replication.sh /docker-entrypoint-initdb.d
+ENV POSTGIS_VERSION 3.1.3
+ENV POSTGIS_SHA256 885e11b26d8385aff49e605d33749a83e711180a3b1996395564ddf6346f3bb4
+
+#COPY 003_setup_replication.sh /docker-entrypoint-initdb.d
 COPY 004_add_pg_extension.sql /docker-entrypoint-initdb.d
-COPY 005_create_db_users.sql /docker-entrypoint-initdb.d
+#COPY 005_create_db_users.sql /docker-entrypoint-initdb.d
 
-RUN set -ex \
+ENV POSTGIS_VERSION 3.1.3
+ENV POSTGIS_SHA256 885e11b26d8385aff49e605d33749a83e711180a3b1996395564ddf6346f3bb4
+
+#Temporary fix:
+#   for PostGIS 2.* - building a special geos
+#   reason:  PostGIS 2.5.5 is not working with GEOS 3.9.*
+ENV POSTGIS2_GEOS_VERSION tags/3.8.2
+
+RUN set -eux \
+    \
     && apk add --no-cache --virtual .fetch-deps \
-                ca-certificates \
-                openssl \
-                tar \
-    # add libcrypto from (edge:main) for gdal-2.3.0
-    #&& apk add --no-cache --virtual .crypto-rundeps \
-    #            --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    #            libressl2.7-libcrypto \
-    #            libcrypto1.1 \
-    #            poppler \
-    #            llvm9-dev \
+        ca-certificates \
+        openssl \
+        tar \
+    \
+    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/$POSTGIS_VERSION.tar.gz" \
+    && echo "$POSTGIS_SHA256 *postgis.tar.gz" | sha256sum -c - \
+    && mkdir -p /usr/src/postgis \
+    && tar \
+        --extract \
+        --file postgis.tar.gz \
+        --directory /usr/src/postgis \
+        --strip-components 1 \
+    && rm postgis.tar.gz \
+    \
     && apk add --no-cache --virtual .build-deps \
         autoconf \
         automake \
+        clang-dev \
         file \
+        g++ \
+        gcc \
+        gdal-dev \
+        gettext-dev \
         json-c-dev \
         libtool \
         libxml2-dev \
+        llvm11-dev \
         make \
+        pcre-dev \
         perl \
-        llvm \
-        clang \
-        clang-dev \
-    && apk add --no-cache --virtual .build-deps-edge \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-        g++ \
-        gdal-dev \
-        geos-dev \
         proj-dev \
         protobuf-c-dev \
-    && cd /tmp \
-    && wget https://github.com/postgis/postgis/archive/${POSTGIS_VERSION}.tar.gz -O - | tar -xz \
-    && chown root:root -R postgis-${POSTGIS_VERSION} \
-    && cd /tmp/postgis-${POSTGIS_VERSION} \
+     \
+# GEOS setup
+     && if   [ $(printf %.1s "$POSTGIS_VERSION") == 3 ]; then \
+            apk add --no-cache --virtual .build-deps-geos geos-dev cunit-dev ; \
+        elif [ $(printf %.1s "$POSTGIS_VERSION") == 2 ]; then \
+            apk add --no-cache --virtual .build-deps-geos cmake git ; \
+            cd /usr/src ; \
+            git clone https://github.com/libgeos/geos.git ; \
+            cd geos ; \
+            git checkout ${POSTGIS2_GEOS_VERSION} -b geos_build ; \
+            mkdir cmake-build ; \
+            cd cmake-build ; \
+                cmake -DCMAKE_BUILD_TYPE=Release .. ; \
+                make -j$(nproc) ; \
+                make check ; \
+                make install ; \
+            cd / ; \
+            rm -fr /usr/src/geos ; \
+        else \
+            echo ".... unknown PosGIS ...." ; \
+        fi \
+    \
+# build PostGIS
+    \
+    && cd /usr/src/postgis \
+    && gettextize \
     && ./autogen.sh \
     && ./configure \
-    && echo "PERL = /usr/bin/perl" >> extensions/postgis/Makefile \
-    && echo "PERL = /usr/bin/perl" >> extensions/postgis_topology/Makefile \
-    && make -s \
-    && make -s install \
+        --with-pcredir="$(pcre-config --prefix)" \
+    && make -j$(nproc) \
+    && make install \
+    \
+# regress check
+    && mkdir /tempdb \
+    && chown -R postgres:postgres /tempdb \
+    && su postgres -c 'pg_ctl -D /tempdb init' \
+    && su postgres -c 'pg_ctl -D /tempdb start' \
+    && cd regress \
+    && make -j$(nproc) check RUNTESTFLAGS=--extension   PGUSER=postgres \
+    #&& make -j$(nproc) check RUNTESTFLAGS=--dumprestore PGUSER=postgres \
+    #&& make garden                                      PGUSER=postgres \
+    && su postgres -c 'pg_ctl -D /tempdb --mode=immediate stop' \
+    && rm -rf /tempdb \
+    && rm -rf /tmp/pgis_reg \
+# add .postgis-rundeps
     && apk add --no-cache --virtual .postgis-rundeps \
-        json-c \
-    && apk add --no-cache --virtual .postgis-rundeps-edge \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-        geos \
         gdal \
+        json-c \
+        libstdc++ \
+        pcre \
         proj \
         protobuf-c \
-        libstdc++ \
+     # Geos setup
+     && if [ $(printf %.1s "$POSTGIS_VERSION") == 3 ]; then \
+            apk add --no-cache --virtual .postgis-rundeps-geos geos ; \
+        fi \
+# clean
     && cd / \
-    && rm -rf /tmp/postgis-${POSTGIS_VERSION} \
-    && apk del .fetch-deps .build-deps .build-deps-edge
+    && rm -rf /usr/src/postgis \
+    && apk del .fetch-deps .build-deps .build-deps-geos
 
-ENV PG_MAX_WAL_SENDERS 8
-ENV PG_WAL_KEEP_SEGMENTS 8
+#COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/10_postgis.sh
+#COPY ./update-postgis.sh /usr/local/bin
