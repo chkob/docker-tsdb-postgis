@@ -1,5 +1,4 @@
 # PostgresqlSetup-Docker
-A docker builds of PostgreSQL(12) + TimescaleDB(1.7.1) + PostGIS(2.5.4)
+A docker builds of PostgreSQL(13) + TimescaleDB(2.4.1) + PostGIS(3.1.3)
 
-Based on [timescale/timescaledb-postgis](https://hub.docker.com/r/timescale/timescaledb-postgis) and [DanielDent/docker-postgres-replication](https://github.com/DanielDent/docker-postgres-replication
-)
+Based on [timescale/timescaledb-postgis](https://hub.docker.com/r/timescale/timescaledb-postgis)
