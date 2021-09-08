@@ -5,7 +5,6 @@ LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com, chkob81@hotmail.
 ENV POSTGIS_VERSION 3.1.3
 ENV POSTGIS_SHA256 885e11b26d8385aff49e605d33749a83e711180a3b1996395564ddf6346f3bb4
 
-#COPY 003_setup_replication.sh /docker-entrypoint-initdb.d
 COPY 004_add_pg_extension.sql /docker-entrypoint-initdb.d
 #COPY 005_create_db_users.sql /docker-entrypoint-initdb.d
 
@@ -112,6 +111,3 @@ RUN set -eux \
     && cd / \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps .build-deps-geos
-
-#COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/10_postgis.sh
-#COPY ./update-postgis.sh /usr/local/bin
