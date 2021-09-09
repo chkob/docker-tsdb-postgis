@@ -2,14 +2,16 @@ FROM timescale/timescaledb:2.4.1-pg13
 
 LABEL maintainer="Chatchai Daecha (chatchai.daecha@outlook.com, chkob81@hotmail.com)"
 
+ARG POSTGRES_MULTIPLE_DATABASES
+ENV POSTGRES_MULTIPLE_DATABASES ${POSTGRES_MULTIPLE_DATABASES}
+ARG TIME_ZONE
+ENV TIME_ZONE ${TIME_ZONE}
+
 ENV POSTGIS_VERSION 3.1.3
 ENV POSTGIS_SHA256 885e11b26d8385aff49e605d33749a83e711180a3b1996395564ddf6346f3bb4
 
-COPY 004_add_pg_extension.sql /docker-entrypoint-initdb.d
-#COPY 005_create_db_users.sql /docker-entrypoint-initdb.d
-
-ENV POSTGIS_VERSION 3.1.3
-ENV POSTGIS_SHA256 885e11b26d8385aff49e605d33749a83e711180a3b1996395564ddf6346f3bb4
+COPY *.sh /docker-entrypoint-initdb.d/
+COPY *.sql /docker-entrypoint-initdb.d/
 
 #Temporary fix:
 #   for PostGIS 2.* - building a special geos

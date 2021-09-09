@@ -1,16 +1,6 @@
-SELECT 'Create user "maupdater" ';
+SELECT 'Create user "db_designer" '; 
 
-CREATE ROLE maupdater WITH
-  LOGIN
-  SUPERUSER
-  INHERIT
-  CREATEDB
-  CREATEROLE
-  NOREPLICATION;
-  
-SELECT 'Create user "navtech" '; 
-
-CREATE ROLE navtech WITH
+CREATE ROLE db_designer WITH
   LOGIN
   SUPERUSER
   INHERIT
@@ -37,13 +27,3 @@ CREATE ROLE windows_service WITH
   NOCREATEDB
   NOCREATEROLE
   NOREPLICATION;
-  
-SELECT 'Create user "repuser" '; 
-
-CREATE ROLE repuser WITH
-  LOGIN
-  SUPERUSER
-  INHERIT
-  CREATEDB
-  CREATEROLE
-  REPLICATION;  
