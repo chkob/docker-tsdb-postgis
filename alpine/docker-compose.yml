@@ -3,12 +3,10 @@ version: '3.8'
 
 services:
   pg-master:
-    container_name: bsupporter-pg-01
+    container_name: pg-docker
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - POSTGIS_VERSION=2.5.4
     restart: 'on-failure'
     environment:
       POSTGRES_USER: 'postgres'
@@ -16,35 +14,9 @@ services:
       PGDATA: '/var/lib/postgresql/data/pgdata'
     volumes:
       - type: bind
-        source: '../../../volumes/pg-master'
+        source: '../../../volumes/pg-docker'
         target: '/var/lib/postgresql/data'
     ports:
       - target: 5432
         published: 9876
         mode: host
-
-  pg-slave:
-    container_name: bsupporter-pg-02
-    depends_on:
-      - pg-master
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - POSTGIS_VERSION=2.5.4
-    restart: 'on-failure'
-    environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'docker'
-      PGDATA: '/var/lib/postgresql/data/pgdata'
-      REPLICATE_FROM: 'pg-master'
-    volumes:
-      - type: bind
-        source: '../../../volumes/pg-slave'
-        target: '/var/lib/postgresql/data' 
-    ports:
-      - target: 5432
-        published: 9877
-        mode: host
-    links:
-     - 'pg-master'
