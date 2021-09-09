@@ -2,16 +2,19 @@
 version: '3.8'
 
 services:
-  pg-master:
+  pg-docker:
     container_name: pg-docker
     build:
       context: .
       dockerfile: Dockerfile
     restart: 'on-failure'
+    image: 'cdaecha/pg_ts_pgis:pg_13_241_313'
     environment:
+      TIME_ZONE: 'Asia/Bangkok'
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: 'docker'
       PGDATA: '/var/lib/postgresql/data/pgdata'
+      POSTGRES_MULTIPLE_DATABASES: 'db_designer@star_gate1,db_designer@star_gate2'
     volumes:
       - type: bind
         source: '../../../volumes/pg-docker'
