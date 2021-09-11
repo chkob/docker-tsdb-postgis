@@ -6,12 +6,16 @@ ARG POSTGRES_MULTIPLE_DATABASES
 ENV POSTGRES_MULTIPLE_DATABASES ${POSTGRES_MULTIPLE_DATABASES}
 ARG TIME_ZONE
 ENV TIME_ZONE ${TIME_ZONE}
+ARG POSTGRES_POSGIS_TEMPLATE_DATABASES
+ENV POSTGRES_POSGIS_TEMPLATE_DATABASES ${POSTGRES_POSGIS_TEMPLATE_DATABASES}
 
 ENV POSTGIS_VERSION 3.1.3
 ENV POSTGIS_SHA256 885e11b26d8385aff49e605d33749a83e711180a3b1996395564ddf6346f3bb4
 
 COPY *.sh /docker-entrypoint-initdb.d/
 COPY *.sql /docker-entrypoint-initdb.d/
+RUN rm /docker-entrypoint-initdb.d/initdb-postgis.sh
+RUN rm /docker-entrypoint-initdb.d/update-postgis.sh
 
 #Temporary fix:
 #   for PostGIS 2.* - building a special geos
